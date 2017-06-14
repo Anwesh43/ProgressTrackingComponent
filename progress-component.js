@@ -4,15 +4,18 @@ class ProgressComponent extends HTMLElement {
     constructor() {
         super()
         const shadow = this.attachShadow({mode:'open'})
-        this.img = document.createElement('image')
+        this.img = document.createElement('img')
         this.type = this.getAttribute('type')||"horizontal"
         if(this.type != "vertical" || this.type != "horizontal") {
             this.type = "horizontal"
         }
         shadow.appendChild(this.img)
-        this.progressObjects = children.map(())
         this.imgLoaded = 0
-        this.objects = this.children.map((child)=>new ProgressObject(child))
+        this.objects = []
+        for(var i=0;i<this.children.length;i++) {
+            const child = this.children[i]
+            this.objects.push(new ProgressObject(child))
+        }
     }
     allImageLoaded() {
         return this.imgLoaded == this.children.length
@@ -22,7 +25,7 @@ class ProgressComponent extends HTMLElement {
         const canvas = document.createElement('canvas')
         var size = w/20,gap = w/12,x = size/2,y = size,ydir = 0,xdir = 1
         var wCanvas = getTotalSize(size,gap,this.objects.length),hCanvas = size*2
-        if(type == "vertical") {
+        if(this.type == "vertical") {
             size = h/20
             gap = h/12
             x = size
@@ -35,16 +38,18 @@ class ProgressComponent extends HTMLElement {
 
         canvas.width = wCanvas
         canvas.height = hCanvas
-        context = canvas.getContext('2d')
+        const context = canvas.getContext('2d')
+        context.lineWidth = 3
         this.objects.forEach((object,i)=>{
+            context.strokeStyle = '#9E9E9E'
             object.draw(context,x,y,size)
-            context.strokeStyle = 'black'
             context.beginPath()
             context.moveTo(x+size/2*xdir,y+size/2*ydir)
             x += (size+gap)*xdir
             y += (size+gap)*ydir
-            context.lineTo(x-size/2*xdir,y-size/2*ydit)
+            context.lineTo(x-size/2*xdir,y-size/2*ydir)
             context.stroke()
+
         })
         this.img.src = canvas.toDataURL()
     }
@@ -54,20 +59,26 @@ class ProgressComponent extends HTMLElement {
         })
     }
 }
-customElements.define('progress-component',ProgressComponent)
 class ProgressObject {
     constructor(dom) {
         this.src = dom.getAttribute('src')
         this.text = dom.getAttribute('text')
         this.donecb = dom.getAttribute('done')
-        this.donecb().then((state)=>{
-            this.isdone = state
-        })
+
     }
     loadImage(parent) {
         this.img = new Image()
         if(!this.src) {
             parent.imgLoaded ++
+            console.log(this.donecb)
+            eval(this.donecb).then((state)=>{
+                console.log(state)
+                if(state == true) {
+                    this.isdone = true
+                    parent.render()
+                    console.log(this.isdone)
+                }
+            })
             if(parent.allImageLoaded() == true) {
                 parent.render()
             }
@@ -77,13 +88,21 @@ class ProgressObject {
 
         this.img.onload =() => {
             parent.imgLoaded++
+            console.log(this.donecb)
+            eval(this.donecb).then((state)=>{
+                if(state == "true") {
+                    this.isdone = true
+                    parent.render()
+                }
+            })
             if(parent.allImageLoaded() == true) {
                 parent.render()
+
+
             }
         }
     }
     draw(context,x,y,size) {
-        context.strokeStyle = '#9E9E9E'
         context.fillStyle = 'orange'
         context.save()
         context.translate(x,y)
@@ -95,8 +114,11 @@ class ProgressObject {
         }
         context.drawImage(this.img,-size/4,-size/4,size/2,size/2)
         context.fillStyle = '#9E9E9E'
-        context.fillText(this.text,-context.measureText(this.text).width/2,size)
-        context.font = context.font.replace(/\d{2}/,size/4)
+        context.font = context.font.replace(/\d{2}/,`${size/4}`)
+        console.log(context.font)
+        context.fillText(this.text,-context.measureText(this.text).width/2,size*3/4)
+
         context.restore()
     }
 }
+customElements.define('progress-component',ProgressComponent)
