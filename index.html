@@ -1,0 +1,50 @@
+<body>
+  <script>
+      const loadFirstTask = ()=>{
+          return new Promise((resolve,reject)=>{
+              setTimeout(()=>{
+                  resolve(true)
+              },2000)
+          })
+      }
+      const loadFifthTask = ()=>{
+          return new Promise((resolve,reject)=>{
+              setTimeout(()=>{
+                  resolve(true)
+              },14000)
+          })
+      }
+      const loadSecondTask = ()=>{
+          return new Promise((resolve,reject)=>{
+              setTimeout(()=>{
+                  resolve(true)
+              },5000)
+          })
+      }
+      const loadThirdTask = ()=>{
+          return new Promise((resolve,reject)=>{
+              setTimeout(()=>{
+                  resolve(true)
+              },8000)
+          })
+      }
+      const loadFourthTask = ()=>{
+          return new Promise((resolve,reject)=>{
+              setTimeout(()=>{
+                  resolve(true)
+              },11000)
+          })
+      }
+  </script>
+    <progress-component>
+        <item text="helo" done = "loadFirstTask()"></item>
+        <item text="helo" done = "loadSecondTask()"></item>
+        <item text="helo" done = "loadThirdTask()"></item>
+        <item text="helo" done = "loadFourthTask()"></item>
+        <item text="helo" done = "loadFifthTask()"></item>
+    </progress-component>
+
+    <script src="progress-component.js">
+    </script>
+
+</body>
